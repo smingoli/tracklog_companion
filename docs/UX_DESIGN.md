@@ -1,6 +1,6 @@
 # TrackLog Companion — Version 1 UI Design
 
-Status: Approved baseline  
+Status: Approved and complete
 Decision date: 25 August 2026
 
 This document is the implementation contract for the Version 1 user-interface decisions approved during design. Changes to an approved decision should be made deliberately and recorded here rather than emerging incidentally during implementation.
@@ -257,10 +257,49 @@ The artwork directory is desirable but missing artwork must not prevent catalogu
 
 An invalid selection remains on the same screen, explains the specific problem, and offers **Choose another folder**. The user is never sent through a generic error dialog or a second setup wizard.
 
-## 13. Remaining screen-level design
+## 13. Application States and Recovery
 
-The following screens belong to the approved navigation model but still require detailed layouts before implementation is considered visually complete:
+### Loading
 
-- Loading, empty, missing-artwork, lost-permission, and incompatible-database states.
+Initial catalogue opening and refresh use a calm blocking loading state with a progress indicator and a short description of the operation. The app does not briefly show zero totals or stale empty states while catalogue data is still loading.
 
-Their design must remain consistent with the principles and navigation contract in this document.
+Animations respect Android's reduced-motion preference. Loading text is announced accessibly without repeatedly announcing animation frames.
+
+### Empty catalogue
+
+A valid database containing no releases or tracks opens Home normally with all totals at zero. Home includes a concise explanation that data must be added in desktop TrackLog and the updated catalogue copied to the selected folder.
+
+A visible **Refresh catalogue** action allows the user to reload after replacing the file. An empty catalogue is not treated as corrupt or incompatible.
+
+### Lost folder permission
+
+When Android no longer grants access to the selected TrackLog folder, the app shows a blocking **Folder access needed** state. It explains that the folder must be selected again and provides one primary **Select TrackLog folder** action.
+
+Selecting the folder runs the standard validation flow. The app does not request broad filesystem permission as a workaround.
+
+### Incompatible database
+
+An unsupported database shows a blocking **Catalogue not supported** state. It explains that the catalogue was created by a newer or incompatible desktop version and displays the detected and supported schema versions when known.
+
+The available actions are:
+
+- **Choose another folder** as the primary recovery action.
+- **Try again** after the user has replaced the file or updated the app.
+
+The app never attempts to migrate or write to an incompatible desktop catalogue.
+
+### Missing artwork
+
+Missing artwork is non-blocking. A standard cover placeholder preserves the release-grid layout, while every other release and track feature remains usable.
+
+When multiple images are missing, the Releases screen may show one concise, non-modal notice that some cover files could not be found. It does not show repeated dialogs or one error per image. Settings remains available for changing or checking the selected folder.
+
+### Refresh failure
+
+Refresh progress appears inline in Settings. If validation or copying fails, the app reports the specific problem and keeps the last successfully opened working catalogue whenever available.
+
+The user receives one appropriate recovery action, such as **Try again**, **Choose another folder**, or **Restore folder access**. Internal exception text and stack traces are never shown.
+
+## 14. Design Completion
+
+The Version 1 screen-level design is complete. Implementation may refine spacing, typography, transitions, and platform-standard component details, but it must preserve the information hierarchy, navigation, conditional-content rules, and recovery behaviours recorded in this document.

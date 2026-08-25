@@ -109,7 +109,7 @@ This layer will contain explicit queries rather than allowing UI code to access 
 
 ### Database access
 
-The database component opens and queries `catalog.db` without modifying it. Before normal use, it checks the required tables and the latest entry in `schema_migrations`. Version 1 will initially support desktop schema version 2; future schema versions must be tested before being accepted.
+The database component opens and queries an app-private working copy of `catalog.db` without modifying it. Before promotion to the working copy, an imported candidate is checked for SQLite integrity, required tables, and the latest entry in `schema_migrations`. Version 1 will initially support desktop schema version 2; future schema versions must be tested before being accepted.
 
 ### TrackLog folder access
 
@@ -152,11 +152,12 @@ The resolver normalises separators, removes the known desktop prefix when presen
 
 1. The user replaces `catalog.db` and, if needed, artwork in the selected folder.
 2. The user invokes refresh, or returns to the app after replacement.
-3. The app closes any existing database connection.
-4. The replacement file is validated and reopened read-only.
-5. Cached catalogue results and artwork affected by the change are invalidated.
+3. The app copies the selected source database into a private staging file.
+4. The staging file is validated before atomically replacing the private working copy.
+5. The app closes the existing database connection and opens the promoted working copy read-only.
+6. Cached catalogue results and artwork affected by the change are invalidated.
 
-Version 1 will not replace the catalogue file itself. This avoids partial-copy and file-ownership complexity while still giving the user an explicit reload operation.
+Version 1 never writes to or replaces the user-owned source catalogue. A failed import leaves the previous private working copy intact.
 
 ## 9. Failure handling
 
@@ -228,9 +229,7 @@ None of these require a backend to be introduced into Version 1.
 
 ## 14. Decisions required before detailed design
 
-1. Complete the detailed design of loading, empty, missing-artwork, lost-permission, and incompatible-database states.
-2. Decide whether the app queries the selected database directly or first creates a private read-only working copy. Android document-provider and SQLite behaviour will influence this choice.
-3. Confirm the minimum supported Android version and target phone or tablet form factors.
+1. Confirm the minimum supported Android version and target phone or tablet form factors.
 
 ## 15. Architectural decisions already made
 
@@ -249,3 +248,6 @@ None of these require a backend to be introduced into Version 1.
 - Release browsing is cover-led and release details lead to ordered track lists.
 - Track details prioritise description, release membership, lyrics, and notes; status, BPM, and musical key are not displayed.
 - Lyrics can be exported through Android's system save flow as a plain-text file.
+- The selected folder is accessed through a persisted Storage Access Framework tree URI.
+- `catalog.db` is copied through a validated staging file into app-private persistent storage and only then opened read-only.
+- Artwork remains in the selected TrackLog folder and is opened through document-provider URIs.
