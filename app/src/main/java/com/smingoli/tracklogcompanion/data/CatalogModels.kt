@@ -14,17 +14,30 @@ data class CatalogRelease(
     val type: String,
     val status: String,
     val imagePath: String?,
+    val description: String?,
     val trackCount: Int,
+    val trackIds: List<Long>,
+)
+
+data class TrackReleaseLink(
+    val releaseId: Long,
+    val title: String,
+    val type: String,
+    val imagePath: String?,
+    val trackOrder: Int,
 )
 
 data class CatalogTrack(
     val id: Long,
     val title: String,
-    val releases: List<String>,
+    val description: String?,
+    val lyrics: String?,
+    val notes: String?,
+    val releases: List<TrackReleaseLink>,
 ) {
     val isAvailable: Boolean get() = releases.isEmpty()
     val membership: String
-        get() = releases.joinToString().ifBlank { "Not assigned to a release" }
+        get() = releases.joinToString { it.title }.ifBlank { "Not assigned to a release" }
 }
 
 data class CatalogSnapshot(
@@ -40,4 +53,3 @@ sealed interface CatalogUiState {
     data class Ready(val catalog: CatalogSnapshot) : CatalogUiState
     data class Error(val message: String) : CatalogUiState
 }
-

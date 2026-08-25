@@ -124,8 +124,8 @@ class CatalogStorage(private val context: Context) {
                 error("Catalogue schema $schemaVersion is not supported; this app supports version $SUPPORTED_SCHEMA_VERSION")
             }
 
-            requireColumns(database, "releases", setOf("id", "title", "type", "status", "image_path"))
-            requireColumns(database, "tracks", setOf("id", "title"))
+            requireColumns(database, "releases", setOf("id", "title", "type", "status", "image_path", "description"))
+            requireColumns(database, "tracks", setOf("id", "title", "description", "lyrics", "notes"))
             requireColumns(database, "release_tracks", setOf("id", "release_id", "track_id", "track_order"))
         }
     }
