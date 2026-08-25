@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -130,12 +131,30 @@ private fun CatalogApp(
 ) {
     var destination by remember { mutableStateOf(Destination.Home) }
     var settingsOpen by remember { mutableStateOf(false) }
+    var searchOpen by remember { mutableStateOf(false) }
     var availableOnly by remember { mutableStateOf(false) }
     var selectedReleaseId by remember { mutableStateOf<Long?>(null) }
     var selectedTrackId by remember { mutableStateOf<Long?>(null) }
 
     if (settingsOpen) {
         SettingsScreen(catalog, { settingsOpen = false }, onChangeFolder, onRefresh)
+        return
+    }
+
+    if (searchOpen) {
+        SearchScreen(
+            catalog = catalog,
+            storage = storage,
+            onBack = { searchOpen = false },
+            onRelease = {
+                searchOpen = false
+                selectedReleaseId = it
+            },
+            onTrack = {
+                searchOpen = false
+                selectedTrackId = it
+            },
+        )
         return
     }
 
@@ -175,7 +194,7 @@ private fun CatalogApp(
             TopAppBar(
                 title = { Text("TrackLog", style = MaterialTheme.typography.headlineSmall) },
                 actions = {
-                    IconButton(onClick = { }) { Icon(Icons.Outlined.Search, "Search") }
+                    IconButton(onClick = { searchOpen = true }) { Icon(Icons.Outlined.Search, "Search") }
                     IconButton(onClick = { settingsOpen = true }) { Icon(Icons.Outlined.Settings, "Settings") }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
@@ -588,6 +607,145 @@ private fun DetailTextSection(title: String, text: String) {
 private fun safeLyricsFilename(title: String): String {
     val safe = title.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().ifBlank { "lyrics" }
     return "$safe.txt"
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchScreen(
+    catalog: CatalogSnapshot,
+    storage: CatalogStorage,
+    onBack: () -> Unit,
+    onRelease: (Long) -> Unit,
+    onTrack: (Long) -> Unit,
+) {
+    var query by rememberSaveable { mutableStateOf("") }
+    val trimmedQuery = query.trim()
+    val releases = remember(catalog.releases, trimmedQuery) {
+        if (trimmedQuery.isEmpty()) emptyList()
+        else catalog.releases.filter { it.title.contains(trimmedQuery, ignoreCase = true) }
+    }
+    val tracks = remember(catalog.tracks, trimmedQuery) {
+        if (trimmedQuery.isEmpty()) emptyList()
+        else catalog.tracks.filter { it.title.contains(trimmedQuery, ignoreCase = true) }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Search") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Back")
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        Column(Modifier.padding(padding).fillMaxSize()) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
+                placeholder = { Text("Search releases and tracks") },
+                leadingIcon = { Icon(Icons.Outlined.Search, null) },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { query = "" }) {
+                            Icon(Icons.Outlined.Close, "Clear search")
+                        }
+                    }
+                },
+                singleLine = true,
+            )
+
+            when {
+                trimmedQuery.isEmpty() -> SearchMessage(
+                    icon = Icons.Outlined.Search,
+                    title = "Search your catalogue",
+                    message = "Find a release or track by title.",
+                )
+                releases.isEmpty() && tracks.isEmpty() -> SearchMessage(
+                    icon = Icons.Outlined.SearchOff,
+                    title = "No results",
+                    message = "Nothing matched “$trimmedQuery”.",
+                )
+                else -> LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    if (releases.isNotEmpty()) {
+                        item {
+                            Text(
+                                "Releases",
+                                style = MaterialTheme.typography.headlineSmall,
+                                modifier = Modifier.padding(top = 8.dp, bottom = 10.dp),
+                            )
+                        }
+                        items(releases, key = { "release-${it.id}" }) { release ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onRelease(release.id) }
+                                    .padding(vertical = 9.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                ReleaseArtwork(release, catalog.treeUri, storage, Modifier.size(62.dp))
+                                Column(Modifier.weight(1f).padding(horizontal = 14.dp)) {
+                                    Text(release.title, style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        "${release.type} · ${release.trackCount} tracks",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                Icon(Icons.Outlined.ChevronRight, null)
+                            }
+                        }
+                    }
+                    if (tracks.isNotEmpty()) {
+                        item {
+                            Text(
+                                "Tracks",
+                                style = MaterialTheme.typography.headlineSmall,
+                                modifier = Modifier.padding(top = 22.dp, bottom = 8.dp),
+                            )
+                        }
+                        items(tracks, key = { "track-${it.id}" }) { track ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onTrack(track.id) }
+                                    .padding(vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(track.title, style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        track.membership,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                                Icon(Icons.Outlined.ChevronRight, null)
+                            }
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchMessage(icon: ImageVector, title: String, message: String) {
+    Box(Modifier.fillMaxSize().padding(28.dp), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Icon(icon, null, Modifier.size(44.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(title, style = MaterialTheme.typography.headlineSmall)
+            Text(message, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
