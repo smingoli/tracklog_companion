@@ -4,6 +4,8 @@ Status: Approved
 
 Decision date: 25 August 2026
 
+Platform baseline: Android 13 / API 33
+
 ## 1. Decision
 
 TrackLog Companion uses two storage surfaces for two different purposes:

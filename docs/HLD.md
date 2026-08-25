@@ -211,8 +211,10 @@ The expected implementation direction is:
 - Android Storage Access Framework for folder access.
 - A lightweight SQLite access layer opened explicitly as read-only.
 - Kotlin coroutines for database and document operations off the main thread.
+- Android 13 / API 33 as the minimum supported platform.
+- API 37 for compilation and target behaviour.
 
-These are architectural preferences, not irreversible decisions. The database access choice in particular must be validated against opening a user-selected SQLite document through Android's Storage Access Framework.
+The storage implementation is defined in the [Android storage design](STORAGE_DESIGN.md). Framework and library versions may advance during development, but changing the minimum supported platform is a product decision and must be recorded explicitly.
 
 ## 13. Evolution path
 
@@ -229,7 +231,7 @@ None of these require a backend to be introduced into Version 1.
 
 ## 14. Decisions required before detailed design
 
-1. Confirm the minimum supported Android version and target phone or tablet form factors.
+The initial application targets phones. Tablet-specific layouts are a possible later enhancement rather than a Version 1 requirement.
 
 ## 15. Architectural decisions already made
 
@@ -251,3 +253,5 @@ None of these require a backend to be introduced into Version 1.
 - The selected folder is accessed through a persisted Storage Access Framework tree URI.
 - `catalog.db` is copied through a validated staging file into app-private persistent storage and only then opened read-only.
 - Artwork remains in the selected TrackLog folder and is opened through document-provider URIs.
+- The minimum supported platform is Android 13 / API 33.
+- The initial build compiles against and targets API 37.
