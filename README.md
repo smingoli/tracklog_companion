@@ -4,14 +4,17 @@ Read-only Android companion app for browsing a TrackLog music catalog.
 
 ## Current status
 
-The native Kotlin and Jetpack Compose project is scaffolded with the primary
-navigation and locked visual direction:
+The native Kotlin and Jetpack Compose application currently provides:
 
 - cover-led Home and Releases screens
 - Home catalog totals
 - release filters for albums, EPs, and singles
 - alphabetical Tracks screen with an Available filter
-- Search and Settings entry points
+- release and track detail navigation
+- conditional Overview, Lyrics, and Notes content
+- UTF-8 plain-text lyrics export
+- grouped global search across releases and tracks
+- folder selection, catalogue validation, and manual refresh
 - dark, warm TrackLog theme
 
 The app now connects to a user-selected TrackLog folder through Android's system
@@ -44,3 +47,4 @@ to the repository.
 - [Catalogue schema contract](docs/CATALOG_SCHEMA.md)
 - [Version 1 UI design](docs/UX_DESIGN.md)
 - [Android storage design](docs/STORAGE_DESIGN.md)
+- [Implementation status](docs/IMPLEMENTATION_STATUS.md)

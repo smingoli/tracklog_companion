@@ -1,6 +1,6 @@
 # TrackLog Companion — High-Level Design
 
-Status: Initial draft  
+Status: Approved implementation baseline
 Target: Version 1
 
 ## 1. Purpose
@@ -28,7 +28,7 @@ Version 1 is expected to provide:
 - Browsing of releases and tracks.
 - Release and track detail views.
 - Display of release artwork.
-- Display of lyrics, descriptions, credits, and other catalogue fields where present.
+- Display of lyrics, descriptions, notes, and release membership where present.
 - Catalogue search.
 - A manual refresh/reload action after the files have been replaced.
 - Clear handling of missing artwork, unsupported database versions, and invalid files.
@@ -207,7 +207,7 @@ The expected implementation direction is:
 
 - Kotlin.
 - Jetpack Compose for the user interface.
-- Android Navigation for screen navigation.
+- Compose state-driven navigation for the current phone-first application.
 - Android Storage Access Framework for folder access.
 - A lightweight SQLite access layer opened explicitly as read-only.
 - Kotlin coroutines for database and document operations off the main thread.
@@ -221,7 +221,6 @@ The storage implementation is defined in the [Android storage design](STORAGE_DE
 Possible later additions include:
 
 - A desktop export command that prepares the complete Android folder.
-- Safer in-app import using a staged copy and atomic replacement.
 - Automated transfer or synchronisation.
 - Additional filtering and catalogue views.
 - Tablet layouts.

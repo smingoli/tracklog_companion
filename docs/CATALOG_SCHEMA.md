@@ -1,6 +1,6 @@
 # Catalogue Schema Contract
 
-Status: Initial schema review  
+Status: Reviewed and implemented
 Source reviewed: TrackLog desktop `catalog.db`, 25 August 2026  
 Supported schema version: 2 (`many_to_many_release_tracks`)
 

@@ -1,6 +1,6 @@
 # TrackLog Companion — Android Storage Design
 
-Status: Approved
+Status: Approved and implemented
 
 Decision date: 25 August 2026
 
