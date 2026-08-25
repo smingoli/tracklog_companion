@@ -33,7 +33,7 @@ Version 1 is expected to provide:
 - A manual refresh/reload action after the files have been replaced.
 - Clear handling of missing artwork, unsupported database versions, and invalid files.
 
-The exact screen set and navigation model will be defined during UX design. The current desktop schema is documented in the [catalogue schema contract](CATALOG_SCHEMA.md).
+The approved screen and navigation decisions are documented in the [Version 1 UI design](UX_DESIGN.md). The current desktop schema is documented in the [catalogue schema contract](CATALOG_SCHEMA.md).
 
 ## 4. Out of scope for Version 1
 
@@ -228,12 +228,11 @@ None of these require a backend to be introduced into Version 1.
 
 ## 14. Decisions required before detailed design
 
-1. Decide the exact Version 1 information architecture: primary tabs and browsing hierarchy.
+1. Complete the detailed design of the Tracks list, global search, settings, and first-run folder-selection screens within the approved navigation model.
 2. Decide whether the app queries the selected database directly or first creates a private read-only working copy. Android document-provider and SQLite behaviour will influence this choice.
 3. Define how compatibility errors are communicated to the user.
 4. Confirm the minimum supported Android version and target phone or tablet form factors.
 5. Define refresh behaviour when the database is replaced while the app is open.
-6. Confirm whether search is global or separated by entity type for Version 1.
 
 ## 15. Architectural decisions already made
 
@@ -247,3 +246,8 @@ None of these require a backend to be introduced into Version 1.
 - The initial Android compatibility target is catalogue schema version 2.
 - Releases and tracks have a many-to-many relationship through ordered `release_tracks` rows.
 - Tracks without a release are valid catalogue records and must remain discoverable.
+- Primary navigation is a three-destination bottom bar: Home, Releases, and Tracks.
+- Search is global and Settings owns folder selection and catalogue refresh.
+- Release browsing is cover-led and release details lead to ordered track lists.
+- Track details prioritise description, release membership, lyrics, and notes; status, BPM, and musical key are not displayed.
+- Lyrics can be exported through Android's system save flow as a plain-text file.
