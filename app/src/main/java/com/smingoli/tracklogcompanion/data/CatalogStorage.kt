@@ -135,7 +135,7 @@ class CatalogStorage(private val context: Context) {
             else -> "application/octet-stream"
         }
         val target = findChild(parent, filename)
-            ?: DocumentsContract.createDocument(context.contentResolver, parent, mimeType, filename)
+            ?: DocumentsContract.createDocument(context.contentResolver, parent.asDocumentUri(), mimeType, filename)
             ?: error("Could not create $path in the selected folder")
 
         context.contentResolver.openOutputStream(target, "wt")?.use { output ->
@@ -147,11 +147,18 @@ class CatalogStorage(private val context: Context) {
         findChild(parent, name)
             ?: DocumentsContract.createDocument(
                 context.contentResolver,
-                parent,
+                parent.asDocumentUri(),
                 DocumentsContract.Document.MIME_TYPE_DIR,
                 name,
             )
             ?: error("Could not create the $name folder")
+
+    private fun Uri.asDocumentUri(): Uri =
+        if (DocumentsContract.isDocumentUri(context, this)) {
+            this
+        } else {
+            DocumentsContract.buildDocumentUriUsingTree(this, DocumentsContract.getTreeDocumentId(this))
+        }
 
     private fun validateArchiveEntries(entries: List<ZipEntry>) {
         if (entries.isEmpty()) error("The selected ZIP file is empty")
