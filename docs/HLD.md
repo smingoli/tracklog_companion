@@ -24,6 +24,7 @@ The Android app uses a copy of the desktop application's SQLite catalogue and as
 Version 1 is expected to provide:
 
 - Initial selection of the Android `TrackLog` data folder.
+- Import of a desktop-generated companion ZIP into a user-selected Android folder.
 - Validation that a usable catalogue exists in the selected folder.
 - Browsing of releases and tracks.
 - Release and track detail views.
@@ -134,6 +135,11 @@ The resolver normalises separators, removes the known desktop prefix when presen
 4. The app locates and validates `catalog.db`.
 5. The catalogue home screen opens, or a useful validation error is shown.
 
+Alternatively, the user may select a desktop companion-export ZIP and a
+destination folder. The app validates the archive and database privately, safely
+extracts the approved `catalog.db` and `images/releases` structure, and connects
+to that destination.
+
 ### Browse or search
 
 1. A screen requests data through the catalogue repository.
@@ -240,6 +246,7 @@ The initial application targets phones. Tablet-specific layouts are a possible l
 - Version 1 is offline and has no backend or account system.
 - Artwork is stored beside the copied catalogue under the TrackLog folder.
 - The app uses Android's system folder picker and retained folder permission.
+- ZIP import writes only to the destination folder explicitly selected for that import.
 - Existing Windows artwork paths are translated at runtime; future relative paths are also accepted.
 - The initial Android compatibility target is catalogue schema version 2.
 - Releases and tracks have a many-to-many relationship through ordered `release_tracks` rows.

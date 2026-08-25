@@ -56,7 +56,22 @@ class CatalogController(context: Context) {
         }
     }
 
+    suspend fun importZip(context: Context, zipUri: Uri, destinationTreeUri: Uri) {
+        state = CatalogUiState.Loading
+        state = withContext(Dispatchers.IO) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    destinationTreeUri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                )
+                storage.importZip(zipUri, destinationTreeUri)
+            }.fold(
+                onSuccess = CatalogUiState::Ready,
+                onFailure = { CatalogUiState.Error(it.userMessage()) },
+            )
+        }
+    }
+
     private fun Throwable.userMessage(): String =
         message?.takeIf(String::isNotBlank) ?: "The catalogue could not be opened"
 }
-

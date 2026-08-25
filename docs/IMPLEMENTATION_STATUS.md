@@ -28,6 +28,8 @@ Version 1 design contract in [UX_DESIGN.md](UX_DESIGN.md).
 - Windows-prefixed and relative artwork-path resolution with traversal rejection.
 - Real cover loading with a non-blocking missing-artwork placeholder.
 - Settings screen with folder change and manual catalogue refresh.
+- Secure desktop companion ZIP import from first-run setup and Settings, with a
+  runtime-selected extraction destination.
 - Loading, folder-required, catalogue-error, empty-list, and no-search-results states.
 - Successful builds and manual testing on an Android emulator and a Poco X6 Pro 5G.
 

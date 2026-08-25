@@ -6,12 +6,16 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.util.AtomicFile
 import java.io.File
+import java.util.Locale
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 
 class CatalogStorage(private val context: Context) {
     private val preferences = context.getSharedPreferences("catalog", Context.MODE_PRIVATE)
     private val catalogDirectory = File(context.filesDir, "catalogue")
     val activeDatabase = File(catalogDirectory, "catalog.db")
     private val pendingDatabase = File(catalogDirectory, "catalog.pending.db")
+    private val pendingZip = File(catalogDirectory, "import.pending.zip")
 
     fun savedTreeUri(): Uri? = preferences.getString(KEY_TREE_URI, null)?.let(Uri::parse)
 
@@ -40,6 +44,45 @@ class CatalogStorage(private val context: Context) {
             return CatalogRepository(activeDatabase).readSnapshot(uri)
         } finally {
             pendingDatabase.delete()
+        }
+    }
+
+    fun importZip(zipUri: Uri, destinationTreeUri: Uri): CatalogSnapshot {
+        catalogDirectory.mkdirs()
+        pendingDatabase.delete()
+        pendingZip.delete()
+
+        try {
+            context.contentResolver.openInputStream(zipUri)?.use { input ->
+                pendingZip.outputStream().buffered().use { output ->
+                    input.copyToLimited(output, MAX_ZIP_BYTES)
+                }
+            } ?: error("The selected ZIP file could not be opened")
+
+            ZipFile(pendingZip).use { archive ->
+                val entries = archive.entries().toList()
+                validateArchiveEntries(entries)
+
+                val databaseEntry = entries.first { normaliseZipEntry(it) == "catalog.db" }
+                archive.getInputStream(databaseEntry).use { input ->
+                    pendingDatabase.outputStream().buffered().use { output ->
+                        input.copyToLimited(output, MAX_DATABASE_BYTES)
+                    }
+                }
+                validate(pendingDatabase)
+
+                entries
+                    .filterNot(ZipEntry::isDirectory)
+                    .sortedBy { normaliseZipEntry(it) == "catalog.db" }
+                    .forEach { entry -> writeArchiveEntry(archive, entry, destinationTreeUri) }
+            }
+
+            promotePendingDatabase()
+            preferences.edit().putString(KEY_TREE_URI, destinationTreeUri.toString()).apply()
+            return CatalogRepository(activeDatabase).readSnapshot(destinationTreeUri)
+        } finally {
+            pendingDatabase.delete()
+            pendingZip.delete()
         }
     }
 
@@ -75,6 +118,78 @@ class CatalogStorage(private val context: Context) {
                 }
             }
             null
+        }
+    }
+
+    private fun writeArchiveEntry(archive: ZipFile, entry: ZipEntry, root: Uri) {
+        val path = normaliseZipEntry(entry)
+        val parts = path.split('/')
+        var parent = root
+        for (directory in parts.dropLast(1)) parent = ensureDirectory(parent, directory)
+
+        val filename = parts.last()
+        val mimeType = when (filename.substringAfterLast('.', "").lowercase(Locale.ROOT)) {
+            "db" -> "application/vnd.sqlite3"
+            "jpg", "jpeg" -> "image/jpeg"
+            "png" -> "image/png"
+            else -> "application/octet-stream"
+        }
+        val target = findChild(parent, filename)
+            ?: DocumentsContract.createDocument(context.contentResolver, parent, mimeType, filename)
+            ?: error("Could not create $path in the selected folder")
+
+        context.contentResolver.openOutputStream(target, "wt")?.use { output ->
+            archive.getInputStream(entry).use { input -> input.copyToLimited(output, MAX_ENTRY_BYTES) }
+        } ?: error("Could not write $path in the selected folder")
+    }
+
+    private fun ensureDirectory(parent: Uri, name: String): Uri =
+        findChild(parent, name)
+            ?: DocumentsContract.createDocument(
+                context.contentResolver,
+                parent,
+                DocumentsContract.Document.MIME_TYPE_DIR,
+                name,
+            )
+            ?: error("Could not create the $name folder")
+
+    private fun validateArchiveEntries(entries: List<ZipEntry>) {
+        if (entries.isEmpty()) error("The selected ZIP file is empty")
+        if (entries.size > MAX_ENTRY_COUNT) error("The selected ZIP contains too many files")
+
+        val normalised = entries.map(::normaliseZipEntry)
+        if (normalised.map { it.lowercase(Locale.ROOT) }.toSet().size != normalised.size) {
+            error("The selected ZIP contains duplicate file paths")
+        }
+        if ("catalog.db" !in normalised) error("The selected ZIP does not contain catalog.db")
+        val totalBytes = entries.filterNot(ZipEntry::isDirectory).sumOf { entry ->
+            if (entry.size < 0) error("The ZIP contains a file with an unknown size")
+            if (entry.size > MAX_ENTRY_BYTES) error("The ZIP contains a file that is too large")
+            entry.size
+        }
+        if (totalBytes > MAX_EXTRACTED_BYTES) error("The selected ZIP expands beyond the supported size")
+    }
+
+    private fun normaliseZipEntry(entry: ZipEntry): String {
+        val path = entry.name.replace('\\', '/').trimEnd('/')
+        if (path.isBlank() || path.startsWith('/') || ':' in path) error("The ZIP contains an unsafe file path")
+        val parts = path.split('/')
+        if (parts.any { it.isBlank() || it == "." || it == ".." }) error("The ZIP contains an unsafe file path")
+        val allowed = path == "catalog.db" || path == "images" || path == "images/releases" ||
+            path.startsWith("images/releases/")
+        if (!allowed) error("The ZIP contains an unsupported entry: $path")
+        return path
+    }
+
+    private fun java.io.InputStream.copyToLimited(output: java.io.OutputStream, maximumBytes: Long) {
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        var copied = 0L
+        while (true) {
+            val count = read(buffer)
+            if (count < 0) break
+            copied += count
+            if (copied > maximumBytes) error("The selected ZIP exceeds the supported size")
+            output.write(buffer, 0, count)
         }
     }
 
@@ -140,5 +255,10 @@ class CatalogStorage(private val context: Context) {
     companion object {
         private const val KEY_TREE_URI = "tree_uri"
         private const val SUPPORTED_SCHEMA_VERSION = 2
+        private const val MAX_ENTRY_COUNT = 2_000
+        private const val MAX_ZIP_BYTES = 512L * 1024 * 1024
+        private const val MAX_EXTRACTED_BYTES = 1024L * 1024 * 1024
+        private const val MAX_ENTRY_BYTES = 256L * 1024 * 1024
+        private const val MAX_DATABASE_BYTES = 64L * 1024 * 1024
     }
 }

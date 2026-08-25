@@ -1,6 +1,6 @@
 # TrackLog Companion — Android Storage Design
 
-Status: Approved and implemented
+Status: Approved and implemented, including companion ZIP import
 
 Decision date: 25 August 2026
 
@@ -34,7 +34,9 @@ The source `catalog.db` remains untouched and canonical.
 
 First run launches `ACTION_OPEN_DOCUMENT_TREE`. After the user chooses the TrackLog folder, the app takes the offered persistable read permission and stores the tree URI in private preferences.
 
-The requested permission is read-only. The app does not request `MANAGE_EXTERNAL_STORAGE`, legacy broad-storage access, or permission to write into the TrackLog source folder.
+Normal browsing requests read-only access. The app does not request
+`MANAGE_EXTERNAL_STORAGE` or legacy broad-storage access. ZIP import requests
+write access only to the destination folder explicitly selected by the user.
 
 The tree is expected to contain:
 
@@ -147,5 +149,27 @@ The storage layer exposes operations equivalent to:
 - Open the active working catalogue read-only.
 - Resolve and open artwork by safe relative path.
 - Export lyrics to a user-created text document.
+
+## 12. Desktop companion ZIP import
+
+The import flow is available during first-run setup and from Settings:
+
+1. Android's document picker selects a desktop-generated ZIP.
+2. Android's folder picker selects the extraction destination.
+3. The ZIP is copied to temporary app-private storage.
+4. Archive entries are normalised and checked before extraction.
+5. Only `catalog.db` and content beneath `images/releases/` are accepted.
+6. Absolute paths, parent traversal, duplicate paths, unsupported entries, excessive
+   entry counts, and excessive compressed or expanded sizes are rejected.
+7. `catalog.db` is privately extracted and passes the standard integrity and schema
+   validation before the destination is modified.
+8. Approved files are written through the destination's document-provider grant.
+9. The validated database is atomically promoted to the private working copy and
+   the destination becomes the selected TrackLog folder.
+
+An invalid archive never replaces the active private catalogue. An interrupted
+document-provider extraction may leave partial files in the user-selected
+destination, but the app does not connect to that destination or replace its
+working catalogue unless extraction and validation complete successfully.
 
 UI and repository code do not manipulate tree URIs, private files, or document streams directly.

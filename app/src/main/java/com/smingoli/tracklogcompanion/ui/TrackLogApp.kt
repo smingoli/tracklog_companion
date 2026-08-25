@@ -48,24 +48,46 @@ fun TrackLogApp() {
     val context = LocalContext.current
     val controller = remember { CatalogController(context) }
     val scope = rememberCoroutineScope()
+    var pendingZipUri by remember { mutableStateOf<Uri?>(null) }
     val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri != null) scope.launch { controller.selectFolder(context, uri) }
+    }
+    val importDestinationPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        val zipUri = pendingZipUri
+        pendingZipUri = null
+        if (uri != null && zipUri != null) {
+            scope.launch { controller.importZip(context, zipUri, uri) }
+        }
+    }
+    val zipPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            pendingZipUri = uri
+            importDestinationPicker.launch(null)
+        }
+    }
+    val startZipImport = {
+        zipPicker.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream"))
     }
 
     LaunchedEffect(controller) { controller.initialise() }
 
     when (val state = controller.state) {
         CatalogUiState.Loading -> LoadingScreen()
-        CatalogUiState.NeedsFolder -> ConnectCatalogScreen { folderPicker.launch(null) }
+        CatalogUiState.NeedsFolder -> ConnectCatalogScreen(
+            onSelectFolder = { folderPicker.launch(null) },
+            onImportZip = startZipImport,
+        )
         is CatalogUiState.Error -> CatalogErrorScreen(
             message = state.message,
             onChooseFolder = { folderPicker.launch(null) },
+            onImportZip = startZipImport,
             onTryAgain = { scope.launch { controller.initialise() } },
         )
         is CatalogUiState.Ready -> CatalogApp(
             catalog = state.catalog,
             storage = controller.storage,
             onChangeFolder = { folderPicker.launch(state.catalog.treeUri) },
+            onImportZip = startZipImport,
             onRefresh = { scope.launch { controller.refresh() } },
         )
     }
@@ -83,7 +105,7 @@ private fun LoadingScreen() {
 }
 
 @Composable
-private fun ConnectCatalogScreen(onSelectFolder: () -> Unit) {
+private fun ConnectCatalogScreen(onSelectFolder: () -> Unit, onImportZip: () -> Unit) {
     Box(Modifier.fillMaxSize().padding(28.dp), contentAlignment = Alignment.Center) {
         Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
             Icon(Icons.Outlined.FolderOpen, null, Modifier.size(52.dp), tint = MaterialTheme.colorScheme.primary)
@@ -100,8 +122,13 @@ private fun ConnectCatalogScreen(onSelectFolder: () -> Unit) {
                 Spacer(Modifier.size(10.dp))
                 Text("Select TrackLog folder")
             }
+            OutlinedButton(onClick = onImportZip, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.Archive, null)
+                Spacer(Modifier.size(10.dp))
+                Text("Import TrackLog export ZIP")
+            }
             Text(
-                "Your catalogue remains on this device and is never modified.",
+                "Imported files are written only to the folder you choose. Catalogue browsing remains read-only.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -110,12 +137,18 @@ private fun ConnectCatalogScreen(onSelectFolder: () -> Unit) {
 }
 
 @Composable
-private fun CatalogErrorScreen(message: String, onChooseFolder: () -> Unit, onTryAgain: () -> Unit) {
+private fun CatalogErrorScreen(
+    message: String,
+    onChooseFolder: () -> Unit,
+    onImportZip: () -> Unit,
+    onTryAgain: () -> Unit,
+) {
     Box(Modifier.fillMaxSize().padding(28.dp), contentAlignment = Alignment.Center) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text("Catalogue could not be opened", style = MaterialTheme.typography.headlineLarge)
             Text(message, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Button(onClick = onChooseFolder, modifier = Modifier.fillMaxWidth()) { Text("Choose another folder") }
+            OutlinedButton(onClick = onImportZip, modifier = Modifier.fillMaxWidth()) { Text("Import export ZIP") }
             OutlinedButton(onClick = onTryAgain, modifier = Modifier.fillMaxWidth()) { Text("Try again") }
         }
     }
@@ -127,6 +160,7 @@ private fun CatalogApp(
     catalog: CatalogSnapshot,
     storage: CatalogStorage,
     onChangeFolder: () -> Unit,
+    onImportZip: () -> Unit,
     onRefresh: () -> Unit,
 ) {
     var destination by remember { mutableStateOf(Destination.Home) }
@@ -137,7 +171,7 @@ private fun CatalogApp(
     var selectedTrackId by remember { mutableStateOf<Long?>(null) }
 
     if (settingsOpen) {
-        SettingsScreen(catalog, { settingsOpen = false }, onChangeFolder, onRefresh)
+        SettingsScreen(catalog, { settingsOpen = false }, onChangeFolder, onImportZip, onRefresh)
         return
     }
 
@@ -754,6 +788,7 @@ private fun SettingsScreen(
     catalog: CatalogSnapshot,
     onBack: () -> Unit,
     onChangeFolder: () -> Unit,
+    onImportZip: () -> Unit,
     onRefresh: () -> Unit,
 ) {
     Scaffold(
@@ -773,6 +808,11 @@ private fun SettingsScreen(
                 SettingsSection("TrackLog folder") {
                     Text(catalog.treeUri.lastPathSegment ?: catalog.treeUri.toString(), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     OutlinedButton(onClick = onChangeFolder) { Text("Change folder") }
+                    OutlinedButton(onClick = onImportZip) {
+                        Icon(Icons.Outlined.Archive, null)
+                        Spacer(Modifier.size(8.dp))
+                        Text("Import export ZIP")
+                    }
                 }
             }
             item {
@@ -807,5 +847,5 @@ private fun SettingsSection(title: String, content: @Composable ColumnScope.() -
 @Preview(showBackground = true, widthDp = 412, heightDp = 892)
 @Composable
 private fun ConnectPreview() {
-    TrackLogTheme { ConnectCatalogScreen {} }
+    TrackLogTheme { ConnectCatalogScreen({}, {}) }
 }

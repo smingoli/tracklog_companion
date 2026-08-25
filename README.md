@@ -15,6 +15,7 @@ The native Kotlin and Jetpack Compose application currently provides:
 - UTF-8 plain-text lyrics export
 - grouped global search across releases and tracks
 - folder selection, catalogue validation, and manual refresh
+- secure desktop-export ZIP import into a user-selected destination folder
 - dark, warm TrackLog theme
 
 The app now connects to a user-selected TrackLog folder through Android's system

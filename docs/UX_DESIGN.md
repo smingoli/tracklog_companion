@@ -242,6 +242,7 @@ The screen:
 - States that access is remembered and the catalogue is opened read-only.
 - Shows the expected `catalog.db` and `images/releases` structure.
 - Provides one primary **Select TrackLog folder** action.
+- Provides an **Import TrackLog export ZIP** alternative.
 - States that catalogue data remains on the device.
 
 The primary action opens Android's system folder picker. After a selection, the app immediately validates:
@@ -252,6 +253,11 @@ The primary action opens Android's system folder picker. After a selection, the 
 4. The artwork directory can be accessed when present.
 
 Validation progress is shown on the same screen. A valid folder produces a clear ready state with release and track totals, followed by **Continue to TrackLog**. Continuing opens Home.
+
+ZIP import first opens Android's file picker and then asks the user to select the
+destination folder. Import progress uses the standard blocking loading state. A
+successful import validates and connects the extracted catalogue; an invalid ZIP
+returns to the actionable catalogue-error state.
 
 The artwork directory is desirable but missing artwork must not prevent catalogue browsing. A valid readable database is the essential requirement.
 
