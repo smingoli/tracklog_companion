@@ -125,7 +125,7 @@ private fun ConnectCatalogScreen(onSelectFolder: () -> Unit, onImportZip: () -> 
             OutlinedButton(onClick = onImportZip, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.Archive, null)
                 Spacer(Modifier.size(10.dp))
-                Text("Import TrackLog export ZIP")
+                Text("Import TrackLog ZIP")
             }
             Text(
                 "Imported files are written only to the folder you choose. Catalogue browsing remains read-only.",
@@ -148,7 +148,7 @@ private fun CatalogErrorScreen(
             Text("Catalogue could not be opened", style = MaterialTheme.typography.headlineLarge)
             Text(message, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Button(onClick = onChooseFolder, modifier = Modifier.fillMaxWidth()) { Text("Choose another folder") }
-            OutlinedButton(onClick = onImportZip, modifier = Modifier.fillMaxWidth()) { Text("Import export ZIP") }
+            OutlinedButton(onClick = onImportZip, modifier = Modifier.fillMaxWidth()) { Text("Import TrackLog ZIP") }
             OutlinedButton(onClick = onTryAgain, modifier = Modifier.fillMaxWidth()) { Text("Try again") }
         }
     }
@@ -811,7 +811,7 @@ private fun SettingsScreen(
                     OutlinedButton(onClick = onImportZip) {
                         Icon(Icons.Outlined.Archive, null)
                         Spacer(Modifier.size(8.dp))
-                        Text("Import export ZIP")
+                        Text("Import TrackLog ZIP")
                     }
                 }
             }

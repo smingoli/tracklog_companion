@@ -242,7 +242,7 @@ The screen:
 - States that access is remembered and the catalogue is opened read-only.
 - Shows the expected `catalog.db` and `images/releases` structure.
 - Provides one primary **Select TrackLog folder** action.
-- Provides an **Import TrackLog export ZIP** alternative.
+- Provides an **Import TrackLog ZIP** alternative.
 - States that catalogue data remains on the device.
 
 The primary action opens Android's system folder picker. After a selection, the app immediately validates:
