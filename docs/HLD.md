@@ -33,7 +33,7 @@ Version 1 is expected to provide:
 - A manual refresh/reload action after the files have been replaced.
 - Clear handling of missing artwork, unsupported database versions, and invalid files.
 
-The exact screen set and navigation model will be defined during UX design after the current desktop schema has been reviewed.
+The exact screen set and navigation model will be defined during UX design. The current desktop schema is documented in the [catalogue schema contract](CATALOG_SCHEMA.md).
 
 ## 4. Out of scope for Version 1
 
@@ -109,7 +109,7 @@ This layer will contain explicit queries rather than allowing UI code to access 
 
 ### Database access
 
-The database component opens and queries `catalog.db` without modifying it. Before normal use, it performs lightweight compatibility checks, including the presence of required tables or an agreed schema-version marker.
+The database component opens and queries `catalog.db` without modifying it. Before normal use, it checks the required tables and the latest entry in `schema_migrations`. Version 1 will initially support desktop schema version 2; future schema versions must be tested before being accepted.
 
 ### TrackLog folder access
 
@@ -228,13 +228,12 @@ None of these require a backend to be introduced into Version 1.
 
 ## 14. Decisions required before detailed design
 
-1. Confirm the current `catalog.db` schema, relationships, expected catalogue size, and schema-version support.
-2. Decide the exact Version 1 information architecture: primary tabs, browsing hierarchy, and track/release relationships.
-3. Decide whether the app queries the selected database directly or first creates a private read-only working copy. Android document-provider and SQLite behaviour will influence this choice.
-4. Define what constitutes a valid catalogue and how compatibility errors are communicated.
-5. Confirm the minimum supported Android version and target phone or tablet form factors.
-6. Define refresh behaviour when the database is replaced while the app is open.
-7. Confirm whether search is global or separated by entity type for Version 1.
+1. Decide the exact Version 1 information architecture: primary tabs and browsing hierarchy.
+2. Decide whether the app queries the selected database directly or first creates a private read-only working copy. Android document-provider and SQLite behaviour will influence this choice.
+3. Define how compatibility errors are communicated to the user.
+4. Confirm the minimum supported Android version and target phone or tablet form factors.
+5. Define refresh behaviour when the database is replaced while the app is open.
+6. Confirm whether search is global or separated by entity type for Version 1.
 
 ## 15. Architectural decisions already made
 
@@ -245,3 +244,6 @@ None of these require a backend to be introduced into Version 1.
 - Artwork is stored beside the copied catalogue under the TrackLog folder.
 - The app uses Android's system folder picker and retained folder permission.
 - Existing Windows artwork paths are translated at runtime; future relative paths are also accepted.
+- The initial Android compatibility target is catalogue schema version 2.
+- Releases and tracks have a many-to-many relationship through ordered `release_tracks` rows.
+- Tracks without a release are valid catalogue records and must remain discoverable.
