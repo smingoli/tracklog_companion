@@ -14,8 +14,11 @@ navigation and locked visual direction:
 - Search and Settings entry points
 - dark, warm TrackLog theme
 
-The displayed catalog is temporary preview data. Safe folder selection and the
-read-only SQLite integration are the next implementation slice.
+The app now connects to a user-selected TrackLog folder through Android's system
+folder picker. It validates and safely imports `catalog.db` into private app
+storage, queries the private copy read-only, and displays real totals, releases,
+tracks, memberships, statuses, and available cover artwork. No sample catalogue
+content is built into the app.
 
 ## Platform
 

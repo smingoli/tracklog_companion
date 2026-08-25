@@ -1,5 +1,7 @@
 *.iml
 .gradle/
+.kotlin/
+gradle/gradle-daemon-jvm.properties
 .idea/
 local.properties
 build/
@@ -14,4 +16,3 @@ catalog.db
 *.db-journal
 *.db-shm
 *.db-wal
-
