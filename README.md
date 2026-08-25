@@ -2,6 +2,9 @@
 
 Read-only Android companion app for browsing a TrackLog music catalog.
 
+Current application version: **0.2.1** (`versionCode 3`). The source repository
+is public; TrackLog catalogue content and generated APKs are not part of it.
+
 ## Current status
 
 The native Kotlin and Jetpack Compose application currently provides:
@@ -42,6 +45,18 @@ newer device.
 The source `catalog.db` is intentionally excluded from Git and must never be added
 to the repository.
 
+## Connect a catalogue
+
+The app supports two setup paths:
+
+1. Select an existing Android folder containing `catalog.db` and
+   `images/releases/`.
+2. Select **Import TrackLog ZIP**, choose a desktop companion-export ZIP, then
+   choose the Android destination folder where it should be extracted.
+
+Both paths validate the database before it becomes the app's active read-only
+working catalogue.
+
 ## Documentation
 
 - [High-level design](docs/HLD.md)
@@ -49,3 +64,4 @@ to the repository.
 - [Version 1 UI design](docs/UX_DESIGN.md)
 - [Android storage design](docs/STORAGE_DESIGN.md)
 - [Implementation status](docs/IMPLEMENTATION_STATUS.md)
+- [User guide](docs/USER_GUIDE.md)

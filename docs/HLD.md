@@ -2,10 +2,11 @@
 
 Status: Approved implementation baseline
 Target: Version 1
+Implementation baseline: App `0.2.1`
 
 ## 1. Purpose
 
-TrackLog Companion is a private Android application for browsing a TrackLog music catalogue away from the desktop application.
+TrackLog Companion is an offline Android application for browsing a TrackLog music catalogue away from the desktop application.
 
 The Android app uses a copy of the desktop application's SQLite catalogue and associated release artwork. It is a read-only companion: the desktop application remains the only system that creates or changes catalogue data.
 
@@ -74,7 +75,9 @@ The approved screen and navigation decisions are documented in the [Version 1 UI
 └───────────────────────────────┘
 ```
 
-The file-transfer method is deliberately outside the application boundary in Version 1. Files may be copied by USB, a file-management tool, or another user-controlled mechanism.
+Version 1 supports both external file transfer and in-app companion ZIP import.
+Folders may still be copied by USB or a file-management tool; alternatively, the
+desktop export ZIP is selected and extracted through Android's system pickers.
 
 ## 6. On-device data contract
 
@@ -106,11 +109,11 @@ Presentation logic converts catalogue data into screen state and coordinates nav
 
 The repository exposes read-only catalogue operations to the rest of the app. It is the boundary between application features and the physical SQLite schema.
 
-This layer will contain explicit queries rather than allowing UI code to access database tables directly. That isolation limits the impact of future schema changes.
+This layer contains explicit queries rather than allowing UI code to access database tables directly. That isolation limits the impact of future schema changes.
 
 ### Database access
 
-The database component opens and queries an app-private working copy of `catalog.db` without modifying it. Before promotion to the working copy, an imported candidate is checked for SQLite integrity, required tables, and the latest entry in `schema_migrations`. Version 1 will initially support desktop schema version 2; future schema versions must be tested before being accepted.
+The database component opens and queries an app-private working copy of `catalog.db` without modifying it. Before promotion to the working copy, an imported candidate is checked for SQLite integrity, required tables, and the latest entry in `schema_migrations`. Version 1 supports desktop schema version 2; future schema versions must be tested before being accepted.
 
 ### TrackLog folder access
 
@@ -207,9 +210,9 @@ UI, application models, SQLite queries, storage access, and path translation rem
 
 Screens should support Android text scaling, useful content descriptions, sufficient contrast, and touch targets appropriate for a phone interface.
 
-## 12. Proposed technology direction
+## 12. Implemented technology baseline
 
-The expected implementation direction is:
+The implemented baseline is:
 
 - Kotlin.
 - Jetpack Compose for the user interface.
@@ -226,7 +229,6 @@ The storage implementation is defined in the [Android storage design](STORAGE_DE
 
 Possible later additions include:
 
-- A desktop export command that prepares the complete Android folder.
 - Automated transfer or synchronisation.
 - Additional filtering and catalogue views.
 - Tablet layouts.

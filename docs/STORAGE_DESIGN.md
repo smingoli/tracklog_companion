@@ -4,6 +4,8 @@ Status: Approved and implemented, including companion ZIP import
 
 Decision date: 25 August 2026
 
+Implementation baseline: App `0.2.1`
+
 Platform baseline: Android 13 / API 33
 
 ## 1. Decision

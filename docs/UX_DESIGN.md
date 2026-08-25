@@ -2,6 +2,7 @@
 
 Status: Approved and complete
 Decision date: 25 August 2026
+Implementation baseline: App `0.2.1`
 
 This document is the implementation contract for the Version 1 user-interface decisions approved during design. Changes to an approved decision should be made deliberately and recorded here rather than emerging incidentally during implementation.
 
@@ -211,6 +212,10 @@ The screen contains three concise sections:
 
 The selected folder is displayed using its friendly name and Android document path. A visibly labelled **Change folder** action opens Android's system folder picker.
 
+A visibly labelled **Import TrackLog ZIP** action opens the desktop-export import
+flow and asks for an extraction destination. It is an import action, not a combined
+import/export command.
+
 Changing the folder does not discard the current working catalogue until the replacement selection has passed validation. Cancelling the picker leaves the current folder unchanged.
 
 ### Catalogue
@@ -252,7 +257,8 @@ The primary action opens Android's system folder picker. After a selection, the 
 3. The database is valid and uses a supported schema version.
 4. The artwork directory can be accessed when present.
 
-Validation progress is shown on the same screen. A valid folder produces a clear ready state with release and track totals, followed by **Continue to TrackLog**. Continuing opens Home.
+Validation progress is shown on the same screen. A valid folder opens Home with
+the imported release and track totals.
 
 ZIP import first opens Android's file picker and then asks the user to select the
 destination folder. Import progress uses the standard blocking loading state. A

@@ -2,7 +2,9 @@
 
 Last updated: 25 August 2026
 
-Baseline commit: `8f866dd`
+Application version: `0.2.1` (`versionCode 3`)
+
+Feature baseline commit: `fdf6111`
 
 This record distinguishes implemented and tested behaviour from the complete
 Version 1 design contract in [UX_DESIGN.md](UX_DESIGN.md).
@@ -30,8 +32,13 @@ Version 1 design contract in [UX_DESIGN.md](UX_DESIGN.md).
 - Settings screen with folder change and manual catalogue refresh.
 - Secure desktop companion ZIP import from first-run setup and Settings, with a
   runtime-selected extraction destination.
+- Correct conversion of Storage Access Framework tree URIs when creating files
+  and directories in an empty ZIP-import destination.
 - Loading, folder-required, catalogue-error, empty-list, and no-search-results states.
 - Successful builds and manual testing on an Android emulator and a Poco X6 Pro 5G.
+- Successful real-device ZIP import using a desktop-generated 70 MB companion
+  export containing `catalog.db` and release artwork.
+- Installable signed debug APKs produced for Samsung Galaxy testing.
 
 ## Next verification and polish
 
@@ -48,3 +55,6 @@ Version 1 design contract in [UX_DESIGN.md](UX_DESIGN.md).
 The real `catalog.db`, copied catalogue data, artwork, signing keys, and generated
 build output are excluded from source control. The desktop TrackLog catalogue
 remains the canonical source and is never modified by the Android application.
+
+The GitHub repository is public. No catalogue content or generated test APK is
+tracked in Git.
