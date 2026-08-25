@@ -201,12 +201,66 @@ Selecting a result opens its normal Release Detail or Track Detail screen. The o
 
 The screen has explicit initial and no-results states. Bottom navigation is hidden while Search is active so the search task remains focused; the back action restores the previous screen and query context does not become a new primary destination.
 
-## 11. Remaining screen-level design
+## 11. Settings and Catalogue Refresh
+
+Settings is a focused utility screen opened from the top app bar. It is not a bottom-navigation destination.
+
+The screen contains three concise sections:
+
+### TrackLog folder
+
+The selected folder is displayed using its friendly name and Android document path. A visibly labelled **Change folder** action opens Android's system folder picker.
+
+Changing the folder does not discard the current working catalogue until the replacement selection has passed validation. Cancelling the picker leaves the current folder unchanged.
+
+### Catalogue
+
+The catalogue section displays:
+
+- The `catalog.db` filename.
+- A clear health state such as **Ready**.
+- Current release and track totals.
+- The time of the last successful refresh.
+- A prominent **Refresh catalogue** action.
+
+Refresh closes the current database connection, validates the selected catalogue, reopens it read-only, invalidates affected cached data, and updates the displayed totals. The action shows progress while refresh is running and an explicit success or failure result when it completes.
+
+If refresh fails, the last successfully opened catalogue remains available whenever technically possible. Failure must not silently replace a working catalogue with an invalid one.
+
+### About
+
+About identifies TrackLog Companion and confirms that database access is read-only. It remains informational and contains no unnecessary preferences.
+
+## 12. First Run and Folder Selection
+
+First run uses one calm, single-purpose screen rather than a multi-step wizard.
+
+The screen:
+
+- Welcomes the user with **Connect your catalogue**.
+- Explains that the app needs the copied Android TrackLog folder.
+- States that access is remembered and the catalogue is opened read-only.
+- Shows the expected `catalog.db` and `images/releases` structure.
+- Provides one primary **Select TrackLog folder** action.
+- States that catalogue data remains on the device.
+
+The primary action opens Android's system folder picker. After a selection, the app immediately validates:
+
+1. Retained access can be granted to the selected folder.
+2. `catalog.db` exists and is readable.
+3. The database is valid and uses a supported schema version.
+4. The artwork directory can be accessed when present.
+
+Validation progress is shown on the same screen. A valid folder produces a clear ready state with release and track totals, followed by **Continue to TrackLog**. Continuing opens Home.
+
+The artwork directory is desirable but missing artwork must not prevent catalogue browsing. A valid readable database is the essential requirement.
+
+An invalid selection remains on the same screen, explains the specific problem, and offers **Choose another folder**. The user is never sent through a generic error dialog or a second setup wizard.
+
+## 13. Remaining screen-level design
 
 The following screens belong to the approved navigation model but still require detailed layouts before implementation is considered visually complete:
 
-- Settings and manual catalogue refresh.
-- First-run TrackLog folder selection and validation.
 - Loading, empty, missing-artwork, lost-permission, and incompatible-database states.
 
 Their design must remain consistent with the principles and navigation contract in this document.
