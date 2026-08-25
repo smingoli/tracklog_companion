@@ -155,12 +155,56 @@ Missing release artwork is the exception: a consistent artwork placeholder prese
 - Screen-reader traversal follows the visual reading order.
 - Loading, empty, and error states use clear text and provide an actionable next step.
 
-## 9. Remaining screen-level design
+## 9. Tracks
+
+Tracks uses a compact alphabetical list rather than artwork tiles.
+
+The local filters are:
+
+- **All**, showing every track.
+- **Available**, showing only tracks not assigned to a release.
+
+Each track row contains:
+
+- Track title.
+- Release membership as supporting text.
+- A navigation indicator.
+
+An unassigned track displays **Not assigned to a release** in place of release membership. Status, BPM, and musical key are not shown. Tapping a row opens Track Detail and keeps Tracks active in the bottom navigation.
+
+Alphabetical section labels help scanning. The result total updates to reflect the selected filter. Search remains available in the top app bar.
+
+The Available-tracks total on Home opens this screen with Available already selected.
+
+## 10. Global Search
+
+Global Search is a focused temporary screen opened from the top app bar. It uses:
+
+- A top-left back action that returns to the originating screen.
+- One prominent search field with a clear action.
+- Live results grouped under **Releases** and **Tracks**.
+
+Search initially matches release and track titles case-insensitively. Empty result groups are omitted. Results are never mixed into an ambiguous flat list.
+
+Release results contain:
+
+- Cover thumbnail or artwork placeholder.
+- Release title.
+- Release type and track count.
+
+Track results contain:
+
+- Track title.
+- Release membership, or **Not assigned to a release**.
+
+Selecting a result opens its normal Release Detail or Track Detail screen. The opened detail preserves the primary navigation destination from which Search was launched.
+
+The screen has explicit initial and no-results states. Bottom navigation is hidden while Search is active so the search task remains focused; the back action restores the previous screen and query context does not become a new primary destination.
+
+## 11. Remaining screen-level design
 
 The following screens belong to the approved navigation model but still require detailed layouts before implementation is considered visually complete:
 
-- Tracks list, including the Available tracks filtered state.
-- Global search and grouped search results.
 - Settings and manual catalogue refresh.
 - First-run TrackLog folder selection and validation.
 - Loading, empty, missing-artwork, lost-permission, and incompatible-database states.

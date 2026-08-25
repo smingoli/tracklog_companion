@@ -228,7 +228,7 @@ None of these require a backend to be introduced into Version 1.
 
 ## 14. Decisions required before detailed design
 
-1. Complete the detailed design of the Tracks list, global search, settings, and first-run folder-selection screens within the approved navigation model.
+1. Complete the detailed design of settings and first-run folder-selection screens within the approved navigation model.
 2. Decide whether the app queries the selected database directly or first creates a private read-only working copy. Android document-provider and SQLite behaviour will influence this choice.
 3. Define how compatibility errors are communicated to the user.
 4. Confirm the minimum supported Android version and target phone or tablet form factors.
