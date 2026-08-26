@@ -2,9 +2,9 @@
 
 Last updated: 26 August 2026
 
-Application version: `0.3.0` (`versionCode 4`)
+Application version: `0.3.1` (`versionCode 5`)
 
-Feature baseline: the `0.3.0` adaptive-layout release.
+Feature baseline: the `0.3.1` adaptive-layout refinement release.
 
 This record distinguishes implemented and tested behaviour from the complete
 Version 1 design contract in [UX_DESIGN.md](UX_DESIGN.md).
@@ -18,6 +18,8 @@ Version 1 design contract in [UX_DESIGN.md](UX_DESIGN.md).
 - Scroll-safe setup, error, Home, Settings, track, and detail content in landscape.
 - Adaptive release grids that add columns as usable width increases.
 - Split release-detail layout at landscape and tablet widths.
+- Compact landscape release-detail artwork and single-line destination titles
+  (`TrackLog - Releases` and `TrackLog - Tracks`) to preserve vertical space.
 - Saved destination, filter, selected-item, search, and track-section UI state across rotation.
 - Sampled cover-art decoding sized for its presentation to limit memory use on large screens.
 - Real catalogue totals and available-track calculation.

@@ -2,7 +2,7 @@
 
 Status: Approved implementation baseline
 Target: Version 1
-Implementation baseline: App `0.3.0`
+Implementation baseline: App `0.3.1`
 
 ## 1. Purpose
 

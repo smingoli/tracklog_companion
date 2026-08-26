@@ -2,7 +2,7 @@
 
 Read-only Android companion app for browsing a TrackLog music catalog.
 
-Current application version: **0.3.0** (`versionCode 4`). The source repository
+Current application version: **0.3.1** (`versionCode 5`). The source repository
 is public; TrackLog catalogue content and generated APKs are not part of it.
 
 ## Current status

@@ -1,6 +1,6 @@
 # TrackLog Companion — User Guide
 
-Applies to application version `0.3.0`.
+Applies to application version `0.3.1`.
 
 ## Requirements
 

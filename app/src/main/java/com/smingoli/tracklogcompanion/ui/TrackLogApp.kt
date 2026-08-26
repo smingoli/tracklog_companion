@@ -308,7 +308,12 @@ private fun CatalogScaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text("TrackLog", style = MaterialTheme.typography.headlineSmall) },
+                title = {
+                    Text(
+                        if (destination == Destination.Home) "TrackLog" else "TrackLog - ${destination.label}",
+                        style = MaterialTheme.typography.headlineSmall,
+                    )
+                },
                 actions = {
                     IconButton(onClick = onSearch) { Icon(Icons.Outlined.Search, "Search") }
                     IconButton(onClick = onSettings) { Icon(Icons.Outlined.Settings, "Settings") }
@@ -422,10 +427,9 @@ private fun ReleasesScreen(
     val filtered = releases.filter {
         filter == "All" || it.type.equals(filter.removeSuffix("s"), ignoreCase = true)
     }
-    Column(modifier = modifier.fillMaxSize().padding(top = 16.dp)) {
-        Text("Releases", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(horizontal = 20.dp))
+    Column(modifier = modifier.fillMaxSize()) {
         Row(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             listOf("All", "Albums", "EPs", "Singles").forEach { label ->
@@ -515,8 +519,7 @@ private fun TracksScreen(
 ) {
     val filtered = if (availableOnly) tracks.filter(CatalogTrack::isAvailable) else tracks
     Column(modifier = modifier.fillMaxSize()) {
-        Text("Tracks", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(20.dp, 16.dp, 20.dp, 0.dp))
-        Row(Modifier.padding(horizontal = 20.dp, vertical = 14.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.padding(horizontal = 20.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(!availableOnly, { onAvailableOnlyChange(false) }, { Text("All") })
             FilterChip(availableOnly, { onAvailableOnlyChange(true) }, { Text("Available") })
         }
@@ -576,7 +579,7 @@ private fun ReleaseDetailScreen(
                 Row(Modifier.fillMaxSize()) {
                     Column(
                         modifier = Modifier
-                            .widthIn(min = 260.dp, max = 380.dp)
+                            .width(300.dp)
                             .fillMaxHeight()
                             .verticalScroll(rememberScrollState())
                             .padding(20.dp),

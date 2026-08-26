@@ -2,7 +2,7 @@
 
 Status: Approved and complete
 Decision date: 25 August 2026
-Implementation baseline: App `0.3.0`
+Implementation baseline: App `0.3.1`
 
 This document is the implementation contract for the Version 1 user-interface decisions approved during design. Changes to an approved decision should be made deliberately and recorded here rather than emerging incidentally during implementation.
 
@@ -42,10 +42,12 @@ Detail screens use a top-left back action and a concise screen label.
 - Release grids use an adaptive minimum tile width and add columns as space permits.
 - Release Detail becomes a two-pane layout at 600 dp or more: artwork and metadata
   occupy the left pane, while the ordered track list scrolls independently on the right.
+- Releases and Tracks use single-line app-bar titles (`TrackLog - Releases` and
+  `TrackLog - Tracks`) instead of repeating a large heading in the content area.
 - Rotation preserves the active destination, list filters, selected release or track,
   search query, and selected track-detail section.
 - Tablet support uses these same width-based rules. A persistent master-detail browser
-  is a possible later enhancement, not part of the `0.3.0` contract.
+  is a possible later enhancement, not part of the `0.3.1` contract.
 
 ## 3. Home
 
