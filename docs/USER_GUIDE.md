@@ -1,6 +1,6 @@
 # TrackLog Companion — User Guide
 
-Applies to application version `0.2.1`.
+Applies to application version `0.3.0`.
 
 ## Requirements
 
@@ -64,6 +64,16 @@ integrity and schema validation.
 - Release and track details expose descriptions, membership, lyrics, and notes
   only when those fields are present.
 - Lyrics can be exported as UTF-8 plain text through Android's save-file dialog.
+
+## Landscape and tablets
+
+- Rotate the device normally; the selected destination, filters, selected item,
+  search query, and track-detail section are retained.
+- Compact screens use bottom navigation. Wider landscape and tablet screens use
+  a navigation rail at the left edge.
+- The Releases grid automatically adds columns when more width is available.
+- Release Detail uses a split layout on wider screens, keeping cover artwork and
+  metadata beside the independently scrollable track list.
 
 ## Privacy and storage
 

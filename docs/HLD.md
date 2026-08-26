@@ -2,7 +2,7 @@
 
 Status: Approved implementation baseline
 Target: Version 1
-Implementation baseline: App `0.2.1`
+Implementation baseline: App `0.3.0`
 
 ## 1. Purpose
 
@@ -216,7 +216,7 @@ The implemented baseline is:
 
 - Kotlin.
 - Jetpack Compose for the user interface.
-- Compose state-driven navigation for the current phone-first application.
+- Compose state-driven navigation with width-adaptive phone, landscape, and tablet layouts.
 - Android Storage Access Framework for folder access.
 - A lightweight SQLite access layer opened explicitly as read-only.
 - Kotlin coroutines for database and document operations off the main thread.
@@ -253,7 +253,8 @@ The initial application targets phones. Tablet-specific layouts are a possible l
 - The initial Android compatibility target is catalogue schema version 2.
 - Releases and tracks have a many-to-many relationship through ordered `release_tracks` rows.
 - Tracks without a release are valid catalogue records and must remain discoverable.
-- Primary navigation is a three-destination bottom bar: Home, Releases, and Tracks.
+- Primary navigation is Home, Releases, and Tracks, presented as a bottom bar at
+  compact widths and a navigation rail at widths of 600 dp or more.
 - Search is global and Settings owns folder selection and catalogue refresh.
 - Release browsing is cover-led and release details lead to ordered track lists.
 - Track details prioritise description, release membership, lyrics, and notes; status, BPM, and musical key are not displayed.

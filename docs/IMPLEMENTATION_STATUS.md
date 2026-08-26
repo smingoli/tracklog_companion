@@ -1,10 +1,10 @@
 # TrackLog Companion — Implementation Status
 
-Last updated: 25 August 2026
+Last updated: 26 August 2026
 
-Application version: `0.2.1` (`versionCode 3`)
+Application version: `0.3.0` (`versionCode 4`)
 
-Feature baseline commit: `fdf6111`
+Feature baseline: the `0.3.0` adaptive-layout release.
 
 This record distinguishes implemented and tested behaviour from the complete
 Version 1 design contract in [UX_DESIGN.md](UX_DESIGN.md).
@@ -14,6 +14,12 @@ Version 1 design contract in [UX_DESIGN.md](UX_DESIGN.md).
 - Native Kotlin and Jetpack Compose Android application.
 - Android 13 / API 33 minimum; API 37 compile and target SDK.
 - Home, Releases, and Tracks primary navigation.
+- Bottom navigation at compact widths and a navigation rail at wider widths.
+- Scroll-safe setup, error, Home, Settings, track, and detail content in landscape.
+- Adaptive release grids that add columns as usable width increases.
+- Split release-detail layout at landscape and tablet widths.
+- Saved destination, filter, selected-item, search, and track-section UI state across rotation.
+- Sampled cover-art decoding sized for its presentation to limit memory use on large screens.
 - Real catalogue totals and available-track calculation.
 - Cover-led release grid with All, Albums, EPs, and Singles filters.
 - Alphabetical track list with All and Available filters.
@@ -47,6 +53,7 @@ Version 1 design contract in [UX_DESIGN.md](UX_DESIGN.md).
 - Confirm last-known-good catalogue behaviour for every refresh failure mode.
 - Test missing and unreadable artwork at catalogue scale.
 - Review accessibility with larger text and screen-reader navigation.
+- Complete a dedicated landscape and tablet device test matrix for the new adaptive layouts.
 - Add automated repository, storage, and Compose UI tests.
 - Refine spacing, typography, and system-back behaviour from real-device findings.
 

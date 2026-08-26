@@ -2,23 +2,24 @@
 
 Status: Approved and complete
 Decision date: 25 August 2026
-Implementation baseline: App `0.2.1`
+Implementation baseline: App `0.3.0`
 
 This document is the implementation contract for the Version 1 user-interface decisions approved during design. Changes to an approved decision should be made deliberately and recorded here rather than emerging incidentally during implementation.
 
 ## 1. Experience principles
 
-- The interface is phone-first, native Android, and read-only.
+- The interface is adaptive across phones and tablets, native Android, and read-only.
 - Catalogue content is more important than administrative metadata.
 - Release artwork is the primary visual anchor.
-- Primary destinations remain consistently reachable through bottom navigation.
+- Primary destinations remain consistently reachable through bottom navigation
+  at compact widths and a navigation rail at wider widths.
 - Empty fields do not produce empty headings, cards, or tabs.
 - Common actions are visibly labelled rather than hidden in overflow menus.
 - The interface must remain usable with Android text scaling and accessibility services.
 
 ## 2. Application navigation
 
-The persistent bottom navigation contains three primary destinations:
+The persistent primary navigation contains three destinations:
 
 1. **Home**
 2. **Releases**
@@ -32,6 +33,19 @@ Global actions appear in the top application bar:
 - **Settings** owns the TrackLog folder selection and catalogue refresh controls.
 
 Detail screens use a top-left back action and a concise screen label.
+
+### Adaptive layout rules
+
+- Compact widths use bottom navigation; widths of 600 dp or more use a left-side
+  navigation rail so content is not compressed vertically in landscape.
+- Lists and setup/error content remain vertically scrollable when height is limited.
+- Release grids use an adaptive minimum tile width and add columns as space permits.
+- Release Detail becomes a two-pane layout at 600 dp or more: artwork and metadata
+  occupy the left pane, while the ordered track list scrolls independently on the right.
+- Rotation preserves the active destination, list filters, selected release or track,
+  search query, and selected track-detail section.
+- Tablet support uses these same width-based rules. A persistent master-detail browser
+  is a possible later enhancement, not part of the `0.3.0` contract.
 
 ## 3. Home
 
@@ -49,7 +63,8 @@ Home also provides Search and Settings in the top app bar. It does not duplicate
 
 ## 4. Releases
 
-Releases uses a two-column, cover-led grid.
+Releases uses a cover-led grid: two columns at typical compact phone widths and
+additional columns where the adaptive minimum tile width permits.
 
 The local filters are:
 

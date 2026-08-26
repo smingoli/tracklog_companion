@@ -2,7 +2,7 @@
 
 Read-only Android companion app for browsing a TrackLog music catalog.
 
-Current application version: **0.2.1** (`versionCode 3`). The source repository
+Current application version: **0.3.0** (`versionCode 4`). The source repository
 is public; TrackLog catalogue content and generated APKs are not part of it.
 
 ## Current status
@@ -19,6 +19,10 @@ The native Kotlin and Jetpack Compose application currently provides:
 - grouped global search across releases and tracks
 - folder selection, catalogue validation, and manual refresh
 - secure desktop-export ZIP import into a user-selected destination folder
+- responsive portrait, landscape, and tablet layouts
+- navigation rail on wider screens and adaptive release grids
+- split release-detail layout in landscape and at tablet widths
+- rotation-safe destination, filter, search, and detail-section state
 - dark, warm TrackLog theme
 
 The app now connects to a user-selected TrackLog folder through Android's system

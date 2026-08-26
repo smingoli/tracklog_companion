@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.*
@@ -106,27 +108,43 @@ private fun LoadingScreen() {
 
 @Composable
 private fun ConnectCatalogScreen(onSelectFolder: () -> Unit, onImportZip: () -> Unit) {
-    Box(Modifier.fillMaxSize().padding(28.dp), contentAlignment = Alignment.Center) {
-        Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(28.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterVertically),
+    ) {
+        item {
             Icon(Icons.Outlined.FolderOpen, null, Modifier.size(52.dp), tint = MaterialTheme.colorScheme.primary)
+        }
+        item {
             Text("Connect your catalogue", style = MaterialTheme.typography.headlineLarge)
+        }
+        item {
             Text(
                 "Select the TrackLog folder copied to this Android device. Access is remembered and catalog.db is always opened read-only.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+        item {
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                 Text("TrackLog/\n  catalog.db\n  images/releases/", Modifier.padding(18.dp))
             }
+        }
+        item {
             Button(onClick = onSelectFolder, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.FolderOpen, null)
                 Spacer(Modifier.size(10.dp))
                 Text("Select TrackLog folder")
             }
+        }
+        item {
             OutlinedButton(onClick = onImportZip, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.Archive, null)
                 Spacer(Modifier.size(10.dp))
                 Text("Import TrackLog ZIP")
             }
+        }
+        item {
             Text(
                 "Imported files are written only to the folder you choose. Catalogue browsing remains read-only.",
                 style = MaterialTheme.typography.bodyMedium,
@@ -143,12 +161,24 @@ private fun CatalogErrorScreen(
     onImportZip: () -> Unit,
     onTryAgain: () -> Unit,
 ) {
-    Box(Modifier.fillMaxSize().padding(28.dp), contentAlignment = Alignment.Center) {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(28.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+    ) {
+        item {
             Text("Catalogue could not be opened", style = MaterialTheme.typography.headlineLarge)
+        }
+        item {
             Text(message, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        item {
             Button(onClick = onChooseFolder, modifier = Modifier.fillMaxWidth()) { Text("Choose another folder") }
+        }
+        item {
             OutlinedButton(onClick = onImportZip, modifier = Modifier.fillMaxWidth()) { Text("Import TrackLog ZIP") }
+        }
+        item {
             OutlinedButton(onClick = onTryAgain, modifier = Modifier.fillMaxWidth()) { Text("Try again") }
         }
     }
@@ -163,12 +193,13 @@ private fun CatalogApp(
     onImportZip: () -> Unit,
     onRefresh: () -> Unit,
 ) {
-    var destination by remember { mutableStateOf(Destination.Home) }
-    var settingsOpen by remember { mutableStateOf(false) }
-    var searchOpen by remember { mutableStateOf(false) }
-    var availableOnly by remember { mutableStateOf(false) }
-    var selectedReleaseId by remember { mutableStateOf<Long?>(null) }
-    var selectedTrackId by remember { mutableStateOf<Long?>(null) }
+    var destinationName by rememberSaveable { mutableStateOf(Destination.Home.name) }
+    val destination = Destination.valueOf(destinationName)
+    var settingsOpen by rememberSaveable { mutableStateOf(false) }
+    var searchOpen by rememberSaveable { mutableStateOf(false) }
+    var availableOnly by rememberSaveable { mutableStateOf(false) }
+    var selectedReleaseId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var selectedTrackId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     if (settingsOpen) {
         SettingsScreen(catalog, { settingsOpen = false }, onChangeFolder, onImportZip, onRefresh)
@@ -223,26 +254,79 @@ private fun CatalogApp(
         }
     }
 
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val useNavigationRail = maxWidth >= 600.dp
+        Row(Modifier.fillMaxSize()) {
+            if (useNavigationRail) {
+                NavigationRail {
+                    Spacer(Modifier.height(8.dp))
+                    Destination.entries.forEach { item ->
+                        NavigationRailItem(
+                            selected = destination == item,
+                            onClick = { destinationName = item.name },
+                            icon = { Icon(item.icon, null) },
+                            label = { Text(item.label) },
+                        )
+                    }
+                }
+            }
+            CatalogScaffold(
+                modifier = Modifier.weight(1f),
+                destination = destination,
+                useBottomBar = !useNavigationRail,
+                catalog = catalog,
+                storage = storage,
+                availableOnly = availableOnly,
+                onDestination = { destinationName = it.name },
+                onAvailableOnly = { availableOnly = it },
+                onSearch = { searchOpen = true },
+                onSettings = { settingsOpen = true },
+                onRelease = { selectedReleaseId = it },
+                onTrack = { selectedTrackId = it },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CatalogScaffold(
+    modifier: Modifier,
+    destination: Destination,
+    useBottomBar: Boolean,
+    catalog: CatalogSnapshot,
+    storage: CatalogStorage,
+    availableOnly: Boolean,
+    onDestination: (Destination) -> Unit,
+    onAvailableOnly: (Boolean) -> Unit,
+    onSearch: () -> Unit,
+    onSettings: () -> Unit,
+    onRelease: (Long) -> Unit,
+    onTrack: (Long) -> Unit,
+) {
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = { Text("TrackLog", style = MaterialTheme.typography.headlineSmall) },
                 actions = {
-                    IconButton(onClick = { searchOpen = true }) { Icon(Icons.Outlined.Search, "Search") }
-                    IconButton(onClick = { settingsOpen = true }) { Icon(Icons.Outlined.Settings, "Settings") }
+                    IconButton(onClick = onSearch) { Icon(Icons.Outlined.Search, "Search") }
+                    IconButton(onClick = onSettings) { Icon(Icons.Outlined.Settings, "Settings") }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
         bottomBar = {
-            NavigationBar {
-                Destination.entries.forEach { item ->
-                    NavigationBarItem(
-                        selected = destination == item,
-                        onClick = { destination = item },
-                        icon = { Icon(item.icon, null) },
-                        label = { Text(item.label) },
-                    )
+            if (useBottomBar) {
+                NavigationBar {
+                    Destination.entries.forEach { item ->
+                        NavigationBarItem(
+                            selected = destination == item,
+                            onClick = { onDestination(item) },
+                            icon = { Icon(item.icon, null) },
+                            label = { Text(item.label) },
+                        )
+                    }
                 }
             }
         },
@@ -251,22 +335,22 @@ private fun CatalogApp(
             Destination.Home -> HomeScreen(
                 catalog,
                 Modifier.padding(padding),
-                onTracks = { availableOnly = false; destination = Destination.Tracks },
-                onAvailable = { availableOnly = true; destination = Destination.Tracks },
-                onReleases = { destination = Destination.Releases },
+                onTracks = { onAvailableOnly(false); onDestination(Destination.Tracks) },
+                onAvailable = { onAvailableOnly(true); onDestination(Destination.Tracks) },
+                onReleases = { onDestination(Destination.Releases) },
             )
             Destination.Releases -> ReleasesScreen(
                 catalog.releases,
                 catalog.treeUri,
                 storage,
-                { selectedReleaseId = it },
+                onRelease,
                 Modifier.padding(padding),
             )
             Destination.Tracks -> TracksScreen(
                 catalog.tracks,
                 availableOnly,
-                { availableOnly = it },
-                { selectedTrackId = it },
+                onAvailableOnly,
+                onTrack,
                 Modifier.padding(padding),
             )
         }
@@ -281,26 +365,33 @@ private fun HomeScreen(
     onAvailable: () -> Unit,
     onReleases: () -> Unit,
 ) {
-    Column(
+    LazyColumn(
         modifier = modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 20.dp),
+        contentPadding = PaddingValues(bottom = 20.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("Your music, at a glance", style = MaterialTheme.typography.headlineLarge)
-            Text("Read-only companion for your TrackLog catalog", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Your music, at a glance", style = MaterialTheme.typography.headlineLarge)
+                Text("Read-only companion for your TrackLog catalog", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            MetricCard(catalog.totals.tracks.toString(), "Tracks", Modifier.weight(1f), onTracks)
-            MetricCard(catalog.totals.availableTracks.toString(), "Available", Modifier.weight(1f), onAvailable)
-            MetricCard(catalog.totals.releases.toString(), "Releases", Modifier.weight(1f), onReleases)
+        item {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                MetricCard(catalog.totals.tracks.toString(), "Tracks", Modifier.weight(1f), onTracks)
+                MetricCard(catalog.totals.availableTracks.toString(), "Available", Modifier.weight(1f), onAvailable)
+                MetricCard(catalog.totals.releases.toString(), "Releases", Modifier.weight(1f), onReleases)
+            }
         }
-        Text(
-            "Available tracks are not assigned to a release.",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyMedium,
-        )
+        item {
+            Text(
+                "Available tracks are not assigned to a release.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
         if (catalog.totals.tracks == 0 && catalog.totals.releases == 0) {
-            Text("This catalogue is empty. Add music in TrackLog Desktop, copy the updated folder, then refresh here.")
+            item { Text("This catalogue is empty. Add music in TrackLog Desktop, copy the updated folder, then refresh here.") }
         }
     }
 }
@@ -327,7 +418,7 @@ private fun ReleasesScreen(
     onRelease: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var filter by remember { mutableStateOf("All") }
+    var filter by rememberSaveable { mutableStateOf("All") }
     val filtered = releases.filter {
         filter == "All" || it.type.equals(filter.removeSuffix("s"), ignoreCase = true)
     }
@@ -345,7 +436,7 @@ private fun ReleasesScreen(
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No releases found") }
         } else {
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
+                columns = GridCells.Adaptive(minSize = 156.dp),
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -374,13 +465,30 @@ private fun ReleaseCard(release: CatalogRelease, treeUri: Uri, storage: CatalogS
 }
 
 @Composable
-private fun ReleaseArtwork(release: CatalogRelease, treeUri: Uri, storage: CatalogStorage, modifier: Modifier = Modifier) {
+private fun ReleaseArtwork(
+    release: CatalogRelease,
+    treeUri: Uri,
+    storage: CatalogStorage,
+    modifier: Modifier = Modifier,
+    maxDimension: Int = 768,
+) {
     val context = LocalContext.current
-    val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, release.imagePath, treeUri) {
+    val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, release.imagePath, treeUri, maxDimension) {
         value = withContext(Dispatchers.IO) {
             runCatching {
                 val uri = storage.findArtwork(treeUri, release.imagePath) ?: return@runCatching null
-                context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it)?.asImageBitmap() }
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                context.contentResolver.openInputStream(uri)?.use {
+                    BitmapFactory.decodeStream(it, null, bounds)
+                }
+                var sampleSize = 1
+                while (maxOf(bounds.outWidth, bounds.outHeight) / sampleSize > maxDimension * 2) {
+                    sampleSize *= 2
+                }
+                val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+                context.contentResolver.openInputStream(uri)?.use {
+                    BitmapFactory.decodeStream(it, null, options)?.asImageBitmap()
+                }
             }.getOrNull()
         }
     }
@@ -463,55 +571,114 @@ private fun ReleaseDetailScreen(
             )
         },
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier.padding(padding).fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 28.dp),
-        ) {
-            item {
-                ReleaseArtwork(
-                    release,
-                    catalog.treeUri,
-                    storage,
-                    Modifier.fillMaxWidth().aspectRatio(1f),
-                )
-            }
-            item {
-                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(release.title, style = MaterialTheme.typography.headlineLarge)
-                    Text(
-                        "${release.type} · ${release.trackCount} tracks",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(release.status, color = MaterialTheme.colorScheme.primary)
-                    release.description?.takeIf(String::isNotBlank)?.let {
-                        Spacer(Modifier.height(6.dp))
-                        SelectionContainer { Text(it) }
+        BoxWithConstraints(Modifier.padding(padding).fillMaxSize()) {
+            if (maxWidth >= 600.dp) {
+                Row(Modifier.fillMaxSize()) {
+                    Column(
+                        modifier = Modifier
+                            .widthIn(min = 260.dp, max = 380.dp)
+                            .fillMaxHeight()
+                            .verticalScroll(rememberScrollState())
+                            .padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
+                        ReleaseArtwork(
+                            release,
+                            catalog.treeUri,
+                            storage,
+                            Modifier.fillMaxWidth().aspectRatio(1f),
+                            maxDimension = 1400,
+                        )
+                        ReleaseMetadata(release)
                     }
-                    Spacer(Modifier.height(10.dp))
-                    Text("Tracks", style = MaterialTheme.typography.headlineSmall)
+                    VerticalDivider()
+                    Column(Modifier.weight(1f).fillMaxHeight()) {
+                        Text(
+                            "Tracks",
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.padding(20.dp, 16.dp, 20.dp, 8.dp),
+                        )
+                        ReleaseTrackList(release, tracksById, onTrack)
+                    }
                 }
-            }
-            items(release.trackIds.size) { index ->
-                val track = tracksById[release.trackIds[index]] ?: return@items
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onTrack(track.id) }
-                        .padding(horizontal = 20.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 28.dp),
                 ) {
-                    Text(
-                        (index + 1).toString(),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(34.dp),
-                    )
-                    Text(track.title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                    Icon(Icons.Outlined.ChevronRight, null)
+                    item {
+                        ReleaseArtwork(
+                            release,
+                            catalog.treeUri,
+                            storage,
+                            Modifier.fillMaxWidth().aspectRatio(1f),
+                            maxDimension = 1400,
+                        )
+                    }
+                    item {
+                        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            ReleaseMetadata(release)
+                            Spacer(Modifier.height(6.dp))
+                            Text("Tracks", style = MaterialTheme.typography.headlineSmall)
+                        }
+                    }
+                    items(release.trackIds.size) { index ->
+                        val track = tracksById[release.trackIds[index]] ?: return@items
+                        ReleaseTrackRow(index, track, onTrack)
+                    }
                 }
-                HorizontalDivider(Modifier.padding(start = 54.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
             }
         }
     }
+}
+
+@Composable
+private fun ReleaseMetadata(release: CatalogRelease) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(release.title, style = MaterialTheme.typography.headlineLarge)
+        Text(
+            "${release.type} · ${release.trackCount} tracks",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(release.status, color = MaterialTheme.colorScheme.primary)
+        release.description?.takeIf(String::isNotBlank)?.let {
+            SelectionContainer { Text(it) }
+        }
+    }
+}
+
+@Composable
+private fun ReleaseTrackList(
+    release: CatalogRelease,
+    tracksById: Map<Long, CatalogTrack>,
+    onTrack: (Long) -> Unit,
+) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
+        items(release.trackIds.size) { index ->
+            val track = tracksById[release.trackIds[index]] ?: return@items
+            ReleaseTrackRow(index, track, onTrack)
+        }
+    }
+}
+
+@Composable
+private fun ReleaseTrackRow(index: Int, track: CatalogTrack, onTrack: (Long) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onTrack(track.id) }
+            .padding(horizontal = 20.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            (index + 1).toString(),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(34.dp),
+        )
+        Text(track.title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+        Icon(Icons.Outlined.ChevronRight, null)
+    }
+    HorizontalDivider(Modifier.padding(start = 54.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
 }
 
 private enum class TrackSection(val label: String) { Overview("Overview"), Lyrics("Lyrics"), Notes("Notes") }
@@ -532,7 +699,8 @@ private fun TrackDetailScreen(
         if (!track.lyrics.isNullOrBlank()) add(TrackSection.Lyrics)
         if (!track.notes.isNullOrBlank()) add(TrackSection.Notes)
     }
-    var section by remember(track.id) { mutableStateOf(sections.firstOrNull()) }
+    var sectionName by rememberSaveable(track.id) { mutableStateOf(sections.firstOrNull()?.name) }
+    val section = sectionName?.let(TrackSection::valueOf)
     val exportLyrics = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("text/plain"),
     ) { uri ->
@@ -577,7 +745,7 @@ private fun TrackDetailScreen(
                 item {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         sections.forEach { item ->
-                            FilterChip(section == item, { section = item }, { Text(item.label) })
+                            FilterChip(section == item, { sectionName = item.name }, { Text(item.label) })
                         }
                     }
                 }
